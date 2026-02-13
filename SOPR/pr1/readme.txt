@@ -1,0 +1,8 @@
+Управление обращенным маятником (по методичке)
+
+Дополнительное задание:
+
+Ознакомиться с методом пасификации для повышения робастности ПИД-регуляторов:
+Б. Р. Андриевский, А. Л. Фрадков, “Метод пассификации в задачах адаптивного управления, оценивания и синхронизации”, Автомат. и телемех., 2006, № 11, 3–37; Autom. Remote Control, 67:11 (2006), 1699–1731
+Ознакомиться с вопросов управления двузвенным обращенным маятником:
+Yi-Chang Cheng et al. Q-Value Based Particle Swarm Optimization for Reinforcement Neuro-Fuzzy System Design. International Journal on Computer Science and Engineering (IJCSE)
