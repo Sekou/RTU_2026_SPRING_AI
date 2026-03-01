@@ -1,14 +1,13 @@
 #ВОЗМОЖНЫЕ ОШИБКИ
-#ошибка - нарушение stateless-характера (однозначности расчета) функции upd_pose()
-#ошибка - недостаточное число переменных кодирующих углы разного типа (внешний -, локальный +, суммарный +)
-#ошибка - выравнивание по углу текущего звена вместо угла по концевой точке
-#ошибка - выравнивание по критерию угла вместо критерия расстояния
-#ошибка - неверное направление вектора на цель (инвертированное)
+#ошибка - загибание манипулятора вбок // нарушение stateless-характера (однозначности расчета) функции upd_pose()
+#ошибка - недостижение целевой точки 1 //недостаточное число переменных кодирующих углы разного типа (внешний, локальный, суммарный, остаточный)
+#ошибка - недостижение целевой точки 2 // (некорректный критерий ОЗК) выравнивание по углу текущего звена вместо угла по концевой точке
+#ошибка - недостижение целевой точки 3 //выравнивание по критерию угла вместо критерия расстояния
+#ошибка - скачки между двумя положениями неверное направление вектора на цель (инвертированное)
 #ошибка - залипание манипулятора (ошибка определения точки оастанова по каждой из осей покоорд спуска),
 #ошибка - разорванность манипулятора (ошбика ПЗК/отрисовки)
 #ошибка - псевдо-3д движение манипулятора (перепутаны sin cos в ПЗК)
-#ошибка - дерганные движения манипулятора (некорректный критерий ОЗК или незапоминание экстремумов по координатам),
-#ошибка - недостижение целевой точки (некорректный критерий ОЗК)
+#ошибка - дерганные движения манипулятора (некорректный критерий ОЗК или незапоминание экстремумов по координатам)
 
 import sys, pygame, numpy as np, math
 
@@ -36,13 +35,10 @@ class Link:
         self.global_ang = 0
         self.ext_ang = 0  # NEW ext_ang!!!
         self.vrot = 1
-
     def get_end_pos(self):
         a = self.global_ang
         return np.array(self.pos) + [self.L * math.cos(a), self.L * math.sin(a)]
-
     def sim(self, dt): self.ang = min(self.max_ang, max(self.min_ang, lim_ang(self.ang + self.vrot * dt))) # NEW
-
     def draw(self, screen):
         pygame.draw.line(screen, (0, 0, 0), self.pos, self.get_end_pos(), 2)
         pygame.draw.circle(screen, (0, 0, 0), self.pos, 2, 2)
@@ -51,28 +47,22 @@ class Manipulator:
     def __init__(self, pos0, num_links, L0):
         self.pos0 = pos0
         self.links = [Link(L0 / (1 + 0.5*i), 0, pos0) for i in range(num_links)]
-
     def sim(self, dt):
         for l in self.links: l.sim(dt)
         self.upd_poses()
-
     def set_angs(self, aa):
         for a, l in zip(aa, self.links): l.ang=a
-
     def upd_poses(self):
         self.links[0].pos = self.pos0
         self.links[0].global_ang = self.links[0].ext_ang + self.links[0].ang # NEW ext_ang
         for i in range(1, len(self.links)):
             self.links[i].global_ang = lim_ang(self.links[i - 1].global_ang + self.links[i].ang)
             self.links[i].pos = self.links[i - 1].get_end_pos()
-
     def draw(self, screen):
         for l in self.links: l.draw(screen)
         pygame.draw.circle(screen, (0, 0, 0), self.links[-1].get_end_pos(), 2, 2)
-
     def get_end_pos(self):  # NEW !!!
         return self.links[-1].get_end_pos()
-
     def solve_ik(self, goal):
         self.upd_poses() #NEW
         for l in self.links[::-1]: #легче вращать последние звенья - начинаем с них
@@ -82,57 +72,40 @@ class Manipulator:
 
 class Robot:
     def __init__(self, x, y, alpha):
-        self.x = x
-        self.y = y
+        self.x, self.y = x, y
         self.alpha = alpha
-        self.L = 70
-        self.W = 40
-        self.speed = 0
-        self.steer = 0
+        self.L, self.W = 70, 40
+        self.speed, self.steer = 0, 0
         self.traj = []  # точки траектории
         self.last_da = 0
         self.manip = Manipulator(self.getPos(), 3, 30)
-
     def getPos(self): return [self.x, self.y]
-
-    def clear(self):
-        self.traj = []
-        self.vals1 = []
-        self.vals2 = []
-
+    def clear(self): self.traj = []
     def draw(self, screen):
         p = np.array(self.getPos())
         draw_rot_rect(screen, (0, 0, 0), p, self.L, self.W, self.alpha)
         dx, dy = self.L / 3, self.W / 3
         dd = [[-dx, -dy], [-dx, dy], [dx, -dy], [dx, dy]]
         dd = rot_arr(dd, self.alpha)
-        kRot = [0, 0, 1, 1]
-        for d, k in zip(dd, kRot):
+        for d, k in zip(dd, [0, 0, 1, 1]):
             draw_rot_rect(screen, (0, 0, 0), p + d, self.L / 5, self.W / 5, self.alpha + k * self.steer)
-        for i in range(len(self.traj) - 1):
-            pygame.draw.line(screen, (0, 0, 255), self.traj[i], self.traj[i + 1], 1)
+        for p1,p2 in zip(self.traj[:-1], self.traj[1:]): pygame.draw.line(screen, (0, 0, 255), p1, p2, 1)
         self.manip.draw(screen)
-
     def sim(self, dt):
         self.addedTrajPt = False
-        delta = [self.speed * dt, 0]
-        delta = rot(delta, self.alpha)
-        self.x += delta[0]
-        self.y += delta[1]
+        delta = rot([self.speed * dt, 0], self.alpha)
+        self.x, self.y = self.x+delta[0], self.y+delta[1]
         if self.steer != 0:
             R = self.L / self.steer
             da = self.speed * dt / R
             self.alpha += da
-
         self.manip.pos0 = self.getPos()
         self.manip.links[0].ext_ang = self.alpha   # NEW ext_ang !!!
         self.manip.sim(dt)
-
         p = self.getPos()
         if len(self.traj) == 0 or dist(p, self.traj[-1]) > 10:
             self.traj.append(self.getPos())
             self.addedTrajPt = True
-
     def goto(self, pos, dt):
         v = np.subtract(pos, self.getPos())
         aGoal = math.atan2(v[1], v[0])
@@ -145,12 +118,9 @@ class Robot:
         self.last_da = da
 
 if __name__ == "__main__":
-    screen = pygame.display.set_mode(sz)
-    timer = pygame.time.Clock()
-    fps = 20
+    screen, timer, fps = pygame.display.set_mode(sz), pygame.time.Clock(), 20
 
     robot = Robot(100, 100, 1)
-
     manip = Manipulator((200, 200), 3, 30)
 
     time = 0
@@ -179,8 +149,7 @@ if __name__ == "__main__":
 
         draw_text(screen, f"Time = {time:.3f}", 5, 5)
 
-        pygame.display.flip()
-        timer.tick(fps)
+        pygame.display.flip(), timer.tick(fps)
         time += dt
 
 # template file by S. Diane, RTU MIREA, 2024
