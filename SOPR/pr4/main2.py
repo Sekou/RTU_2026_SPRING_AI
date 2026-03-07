@@ -138,17 +138,12 @@ if __name__ == "__main__":
                 robot.vrot = -1 if ev.key == pygame.K_a else 1 if ev.key == pygame.K_d else robot.vrot
 
         for itime in range(k_time):
-            if fsm.active_state in fsm.states[0]: # вперед
-                robot.vlin, robot.vrot = 50, 0
-            if fsm.active_state in fsm.states[1]: # по часовой
-                robot.vlin, robot.vrot = 50, 1
-            if fsm.active_state in fsm.states[2]: # против часовой
-                robot.vlin, robot.vrot = 50, -1
+            if fsm.active_state in fsm.states[0]: robot.vlin, robot.vrot = 50, 0 # вперед
+            if fsm.active_state in fsm.states[1]: robot.vlin, robot.vrot = 50, 1 # по часовой
+            if fsm.active_state in fsm.states[2]: robot.vlin, robot.vrot = 50, -1 # против часовой
 
-            if robot.x>sz[0]: robot.x=0
-            if robot.x<0: robot.x=sz[0]
-            if robot.y>sz[1]: robot.y=0
-            if robot.y<0: robot.y=sz[1]
+            robot.x=0 if robot.x>sz[0] else sz[0] if robot.x<0 else robot.x
+            robot.y=0 if robot.y>sz[1] else sz[1] if robot.y<0 else robot.y
 
             robot.sim(dt, objs)
 
