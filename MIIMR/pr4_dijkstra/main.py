@@ -34,16 +34,24 @@ class Ngon:
     def check_collision(self, p1, p2):
         pp=self.inflated if len(self.inflated) else self.pts
         for i in range(len(pp)):
-            u=np.array(np.subtract(p2, p1), dtype=np.float64)
-            u*=0.1/np.linalg.norm(u) #TODO отладить соединения чтоб правильно создавались
-            if check_intersection(pp[i - 1], pp[i], p1-u, p2+u) and \
-                    check_intersection(pp[i - 1], pp[i], p1, p2): return True
+            # u=np.array(np.subtract(p2, p1), dtype=np.float64)
+            # u*=0.1/np.linalg.norm(u) #TODO отладить соединения чтоб правильно создавались
+            if check_intersection(pp[i - 1], pp[i], p1, p2): return True
         return False
 
 def dist(p1, p2): return np.linalg.norm(np.subtract(p1, p2))
 def check_intersection(A,B,C,D): # проверка пересечения двух отрезков
     ccw = lambda A, B, C: (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
     return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)
+# def get_segm_intersection(A, B, C, D): # поиск точки пересечения двух отрезков
+#     (x1, y1), (x2, y2), (x3, y3), (x4, y4) = A, B, C, D
+#     denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+#     if denom == 0: return None  # отрезки параллельны или совпадают
+#     t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom
+#     u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom
+#     if 0 <= t <= 1 and 0 <= u <= 1: return (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+#     return None
+
 
 class Node:
     def __init__(self, x, y):
@@ -57,12 +65,15 @@ class Edge:
     def __init__(self, n1, n2): self.n1=n1; self.n2=n2; self.w=dist(n1.get_pos(), n2.get_pos())
 class Graph:
     def __init__(self, start, goal, objs):
-        pts = [] #TODO сократить
+        pts = [] #TODO сократить 2 строки в 1
         for ng in objs: pts.extend(ng.inflated)
         self.nodes=[Node(*start)] + [Node(x,y) for x,y in pts] + [Node(*goal)]
         for i in range(len(self.nodes)):
+            #TODO: понять пч пересечения ищутся только в 1 сторону
             for j in range(i+1, len(self.nodes)):
-                if not any([o.check_collision(self.nodes[i].get_pos(), self.nodes[j].get_pos()) for o in objs]):
+            # for j in range(i, len(self.nodes)):
+            # for j in range(len(self.nodes)): #БОЛЕЕ НАДЕЖНЫЙ ВАРИАНТ
+                if not any([o.check_collision(self.nodes[j].get_pos(), self.nodes[i].get_pos()) for o in objs]):
                     self.nodes[i].edges.append(Edge(self.nodes[i], self.nodes[j]))
                     self.nodes[j].edges.append(Edge(self.nodes[j], self.nodes[i]))
     def draw(self, screen):
