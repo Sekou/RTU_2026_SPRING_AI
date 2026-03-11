@@ -31,9 +31,8 @@ class Ngon:
     def draw(self, screen):
         for i in range(len(self.pts)): # for p1,p2 in zip(self.pts, self.pts[1:]+self.pts[:1]):
             pygame.draw.line(screen, (0,0,0), self.pts[i-1], self.pts[i], 2)
-        if len(self.inflated):
-            for i in range(len(self.inflated)):
-                pygame.draw.line(screen, (0, 0, 255), self.inflated[i - 1], self.inflated[i], 1)
+        for i in range(len(self.inflated)):
+            pygame.draw.line(screen, (0, 0, 255), self.inflated[i - 1], self.inflated[i], 1)
     def inflate(self, r):
         vv=[]
         for i in range(len(self.pts)):
