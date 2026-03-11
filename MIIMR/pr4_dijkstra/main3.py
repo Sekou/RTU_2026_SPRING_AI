@@ -36,15 +36,12 @@ class Ngon:
     def inflate(self, r):
         self.inflated=[]
         for i in range(len(self.pts)):
-            p1, p2 = self.pts[i-1], self.pts[i]
-            n=get_normal(p1, p2)
-            self.inflated.extend([p1+n*r, p2+n*r, [0,0]])
+            n=get_normal(self.pts[i-1], self.pts[i])
+            self.inflated.extend([self.pts[i-1]+n*r, self.pts[i]+n*r, [0,0]])
         for i in range(len(self.pts)):
             p0, p1, p2 = self.pts[i-1], self.pts[i], self.pts[(i+1)%len(self.pts)]
             c, d=get_corner(p0, p1, p2), np.subtract(p1, p0)
-            p=p1+rot(r*d/np.linalg.norm(d), -c/2)
-            self.inflated[i*3+2]=p
-        return self.inflated
+            self.inflated[i*3+2]=p1+rot(r*d/np.linalg.norm(d), -c/2)
     def check_collision(self, p1, p2, r):
         p1, p2= inc_segment(p1, p2, 1)
         for i in range(len(self.pts)):
