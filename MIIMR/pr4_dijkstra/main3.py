@@ -34,18 +34,17 @@ class Ngon:
         for i in range(len(self.inflated)):
             pygame.draw.line(screen, (0, 0, 255), self.inflated[i - 1], self.inflated[i], 1)
     def inflate(self, r):
-        vv=[]
+        self.inflated=[]
         for i in range(len(self.pts)):
             p1, p2 = self.pts[i-1], self.pts[i]
             n=get_normal(p1, p2)
-            vv.extend([p1+n*r, p2+n*r, [0,0]])
+            self.inflated.extend([p1+n*r, p2+n*r, [0,0]])
         for i in range(len(self.pts)):
             p0, p1, p2 = self.pts[i-1], self.pts[i], self.pts[(i+1)%len(self.pts)]
             c, d=get_corner(p0, p1, p2), np.subtract(p1, p0)
             p=p1+rot(r*d/np.linalg.norm(d), -c/2)
-            vv[i*3+2]=p
-        self.inflated=vv
-        return vv
+            self.inflated[i*3+2]=p
+        return self.inflated
     def check_collision(self, p1, p2, r):
         p1, p2= inc_segment(p1, p2, 1)
         for i in range(len(self.pts)):
