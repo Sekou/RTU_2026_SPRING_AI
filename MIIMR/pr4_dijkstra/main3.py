@@ -1,5 +1,4 @@
-import math
-import sys, pygame, numpy as np
+import math, sys, pygame, numpy as np
 
 pygame.font.init()
 def draw_text(screen, s, x, y, sz=15, c=(0, 0, 0)):  # отрисовка текста
@@ -13,7 +12,7 @@ def lim_ang(ang, arc=3.141592653589793): return (ang - 2 * arc) if ang > arc els
 def get_corner(p1, p, p2): return lim_ang(math.atan2(p1[1]-p[1], p1[0]-p[0])-math.atan2(p2[1]-p[1], p2[0]-p[0])) #угол
 def get_normal(p1, p2): #единичный вектор, повернутый по часовой стрелке (в экранной СК)
     return np.array([[0,1],[-1,0]])@np.subtract(p2, p1)/((p2[0]-p1[0])**2+(p2[1]-p1[1])**2)**0.5
-def inc_segment(p1, p2, eps=1):
+def inc_segment(p1, p2, eps=1): #увеличение или сокращение отрезка
     u = np.array(np.subtract(p2, p1), dtype=np.float64)
     return list([p1, p2]+np.array((u, -u))*eps/np.linalg.norm(u))
 def pt_segm_dist2(p, p1, p2): # расстояние от точки до ограниченного отрезка
