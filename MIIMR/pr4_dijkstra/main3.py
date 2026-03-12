@@ -76,7 +76,7 @@ class Graph:
             v.visited, next = True, [e for e in v.edges if not e.n2.visited]
             for e in next: #если текущ. вершина лучше соседа, то обновл. соседа
                 if e.n2.D > v.D+e.w: e.n2.D, e.n2.route=v.D+e.w, v.route+[e.n2]
-                wave.append(e.n2) #берем соседа в фронт поиска
+                if not e.n2 in wave: wave.append(e.n2) #берем соседа в фронт поиска
         return list(reversed(n2.route))
 
 if __name__ == "__main__":
