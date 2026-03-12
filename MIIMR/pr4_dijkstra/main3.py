@@ -46,8 +46,8 @@ class Ngon:
         p1, p2= inc_segment(p1, p2, 1)
         for i in range(len(self.pts)):
             if check_intersection(self.pts[i - 1], self.pts[i], p1, p2): return True
-            if pt_segm_dist2(self.pts[i], p1, p2)<r: return True
-        return False
+            if dist(p1, p2)>1.414*r and pt_segm_dist2(self.pts[i], p1, p2)<r: return True
+        return False #note: small edges are tolerated (dist(p1, p2)>1.414*r)
 
 class Node:
     def __init__(self, x, y): self.x, self.y, self.edges=x, y, []
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     r=20
     for n in ngons: n.inflate(r)
 
-    g=Graph([50,50], [750, 550], ngons, r*0.8)
+    g=Graph([50,50], [750, 550], ngons, r)
 
     route=[]
     while True:
