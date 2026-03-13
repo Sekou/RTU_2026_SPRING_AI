@@ -95,7 +95,7 @@ class RRTNode:
         if self.prev_pt is not None: 
             pygame.draw.line(screen, (0, 0, 0), self.get_pos(), self.prev_pt.get_pos(), 1)
     def gen_next_conf(self, robot, target_conf, save=True): #вместо gen_next_pt
-        dsteer,dspeed=1*np.sign(target_conf[0]-self.steer), 10*np.sign(target_conf[1]-self.speed)
+        dsteer,dspeed=1*np.sign(target_conf[0]-self.steer), 0.2*(target_conf[1]-self.speed)
         n=RRTNode(self.steer+dsteer, self.speed+dspeed, self)
 
         #print(n, self)
@@ -116,35 +116,38 @@ def run_RRT_iter(nodes, robot, goal, objs):
     target=[np.random.randint(v) for v in sz]
     dd=[dist(target, n.get_pos()) for n in nodes]
     ind = np.argmin(dd)
-    print(ind)
-    target_conf=[np.random.normal(0, 1), np.random.normal(0, 10)]
+    #print(ind)
+    target_conf=[np.random.normal(0, 1), 10+90*np.random.rand()]
     nodes.append(nodes[ind].gen_next_conf(robot, target_conf))
 
 #отличие: проверка на препятствия
-def run_RRT_iter2(nodes, goal, objs):
+def run_RRT_iter2(nodes, robot, goal, objs):
     collision=True
     while collision:
-        #target=[np.random.randint(v) for v in sz] #БЕЗ ЭВРИСТИКИ
-        target=[np.random.normal(goal[0], RRT_STEP), np.random.normal(goal[1], RRT_STEP)] #С ЭВРИСТИКОЙ
+        target=[np.random.randint(v) for v in sz] #БЕЗ ЭВРИСТИКИ
+        #target=[np.random.normal(goal[0], RRT_STEP), np.random.normal(goal[1], RRT_STEP)] #С ЭВРИСТИКОЙ
         dd=[dist(target, n.get_pos()) for n in nodes]
         ind = np.argmin(dd)
-        pt=nodes[ind].gen_next_pt(target, False) #False - добавлять узел будем вручную
-        segment=[pt.get_pos(), nodes[ind].get_pos()]
+        target_conf=[np.random.normal(0, 1), 10+90*np.random.rand()]
+        conf=nodes[ind].gen_next_conf(robot, target_conf, False) #False - добавлять узел будем вручную
+        segment=[conf.get_pos(), nodes[ind].get_pos()]
         collision=any([o.intersects(*segment) for o in objs])
-    nodes.append(pt)
-    nodes[ind].next_pts.append(pt)
+        #можно усложнить intersects() чтоб проверять не задевает ли корпус робота препятствия
+    nodes.append(conf)
+    nodes[ind].next_confs.append(conf)
 
 if __name__=="__main__":
     screen, timer, fps = pygame.display.set_mode(sz), pygame.time.Clock(), 20
 
     robot=Robot(100, 100, 1)
     objs = [Obj(300, 400, 50), Obj(400, 370, 50), Obj(500, 300, 50), Obj(200, 250, 50), Obj(450, 200, 50)]
+    (x0,y0), ang0 = robot.get_pos(), robot.alpha
 
     time=0
     start = robot.get_conf()
     goal = [600,400]
 
-    nodes=[RRTNode(*start, x=robot.x, y=robot.y, ang=robot.alpha)]
+    nodes=[RRTNode(*start, x=x0, y=y0, ang=ang0)]
     route=[]
 
     while True:
@@ -152,16 +155,16 @@ if __name__=="__main__":
             if ev.type==pygame.QUIT: sys.exit(0)
             if ev.type==pygame.KEYDOWN: 
                 if ev.key==pygame.K_1: 
-                    for i in range(50):
+                    for i in range(5):
                         run_RRT_iter(nodes, robot, goal, objs)
-                if ev.key==pygame.K_2: run_RRT_iter2(nodes, goal, objs)
+                if ev.key==pygame.K_2: run_RRT_iter2(nodes, robot, goal, objs)
                 if ev.key==pygame.K_3: 
-                    nodes=[RRTNode(*start)]
+                    nodes=[RRTNode(*start, x=x0, y=y0, ang=ang0)]
                     while True:
                         dd=[dist(n.get_pos(),goal) for n in nodes]
                         nearest=nodes[np.argmin(dd)]
                         if min(dd)<RRT_STEP: break
-                        run_RRT_iter2(nodes, goal, objs)
+                        run_RRT_iter2(nodes, robot, goal, objs)
                     route=[nearest]
                     while nearest.prev_pt is not None: 
                         route.insert(0, nearest.prev_pt)
