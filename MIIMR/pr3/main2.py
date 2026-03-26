@@ -65,7 +65,6 @@ def filter_Kalman(yy0):
         print(K)
     return yy
 
-
 np.random.seed(1)
 
 # 1. Create data for the x-axis (angles in radians)
