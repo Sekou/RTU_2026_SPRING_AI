@@ -1,4 +1,4 @@
-from cProfile import label
+#2026, S. Diane, реализация одномерного фильтра Калмана
 import numpy as np
 import matplotlib.pyplot as plt
 
