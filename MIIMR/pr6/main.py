@@ -53,7 +53,6 @@ class RobotManipulator:
             self.links[i].calc()
             self.endPos = self.links[-1].P2
 
-
 if __name__=="__main__":
 
     # графические переменные
