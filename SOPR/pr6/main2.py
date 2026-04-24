@@ -8,7 +8,7 @@ def draw_text(screen, s, x, y, sz=20, c=(0, 0, 0)):  # отрисовка тек
 
 sz = (800, 600)
 
-class Obj: #небольшой объе4кт на экране
+class Obj: #небольшой объект на экране
     def __init__(self, x, y, sz=50, texture_path=None): 
         self.x0, self.y0, self.x, self.y, self.sz = x, y, x, y, sz
         self.texture=None
