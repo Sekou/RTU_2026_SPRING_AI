@@ -37,15 +37,22 @@ def main():
     pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
     gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
     
-    xIsUp=np.array([ #разворачиваем систему координат чтоб было похоже на X0Y0Z0
-     0.0,  1.0,  0.0,  0.0, 
-    -1.0,  0.0,  0.0,  0.0, 
+    #xIsUp=np.array([ #разворачиваем систему координат чтоб было похоже на X0Y0Z0
+    # 0.0,  1.0,  0.0,  0.0, 
+    #-1.0,  0.0,  0.0,  0.0, 
+    # 0.0,  0.0,  1.0,  0.0, 
+    # 0.0,  0.0,  0.0,  1.0 ])
+      
+    zIsUp=np.array([ #разворачиваем систему координат чтоб было похоже на X0Y0Z0
+     -1.0,  0.0,  0.0,  0.0, 
      0.0,  0.0,  1.0,  0.0, 
+     0.0,  1.0,  0.0,  0.0, 
      0.0,  0.0,  0.0,  1.0 ])
 
-    glMultMatrixf(xIsUp)
+    #glMultMatrixf(xIsUp)
+    glMultMatrixf(zIsUp)
 
-    glTranslatef(-1.0, 0.0, -5) # Move the camera back
+    glTranslatef(0, -5.0, -1) # Move the camera back
 
     fps=10
     dt, time=1/fps, 0
@@ -57,18 +64,23 @@ def main():
                 pygame.quit()
                 quit()
         
-        q1,q2=math.sin(time/10),math.cos(time/10)
-        glRotatef(0.1, 1, 0, 0) # Rotate the cube
+        #qq=[math.sin(time/10 + i) for i in range(6)]
+        qq=[0]*6
+        qq[1]=1#math.sin(time/10)
+        glRotatef(0.1, 0, 0, 1) # Rotate the cube
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         draw_axes()
         #draw_segment([0.5,0.5,0.5],[0.7,0.7,0.9])
-        l1,l2=0.8, 0.5
+
         p0=[0,0,0]
+        a90=math.pi/2
         draw_point(p0)
-        M1=draw_link(np.eye(4), l1,0,0,0, q1)
-        draw_point(get_pt(M1))
-        M2=draw_link(M1, l2,0,0,0, q2)
-        draw_point(get_pt(M2))
+        M1=draw_link(np.eye(4), 0,0,-a90,0, qq[0]);draw_point(get_pt(M1))
+        M2=draw_link(M1, 0.432,0.149,0,0, qq[1]); draw_point(get_pt(M2))
+        M3=draw_link(M2, 0.02,0,a90,0, qq[2]); draw_point(get_pt(M3))
+        M4=draw_link(M3, 0,0.432,-a90,0, qq[3]); draw_point(get_pt(M4))
+        M5=draw_link(M4, 0,0,a90,0, qq[4]); draw_point(get_pt(M5))
+        M6=draw_link(M5, 0,.056,0,0, qq[5]); draw_point(get_pt(M6))
         pygame.display.flip()
         pygame.time.wait(fps)
         time+=dt
