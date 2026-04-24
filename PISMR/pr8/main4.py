@@ -64,20 +64,20 @@ def main():
                 pygame.quit()
                 quit()
         
-        #qq=[math.sin(time/10 + i) for i in range(6)]
-        qq=[0]*6
-        qq[1]=1#math.sin(time/10)
+        qq=[math.sin(time/10 + i) for i in range(6)]
+        a90=math.pi/2
+
+      
         glRotatef(0.1, 0, 0, 1) # Rotate the cube
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         draw_axes()
         #draw_segment([0.5,0.5,0.5],[0.7,0.7,0.9])
 
         p0=[0,0,0]
-        a90=math.pi/2
         draw_point(p0)
-        M1=draw_link(np.eye(4), 0,0,-a90,0, qq[0]);draw_point(get_pt(M1))
+        M1=draw_link(np.eye(4), 0,0,-a90,a90, qq[0]);draw_point(get_pt(M1)) #почему th +90 ?
         M2=draw_link(M1, 0.432,0.149,0,0, qq[1]); draw_point(get_pt(M2))
-        M3=draw_link(M2, 0.02,0,a90,0, qq[2]); draw_point(get_pt(M3))
+        M3=draw_link(M2, 0.02,0,a90,a90, qq[2]); draw_point(get_pt(M3)) #почему th +90 ?
         M4=draw_link(M3, 0,0.432,-a90,0, qq[3]); draw_point(get_pt(M4))
         M5=draw_link(M4, 0,0,a90,0, qq[4]); draw_point(get_pt(M5))
         M6=draw_link(M5, 0,.056,0,0, qq[5]); draw_point(get_pt(M6))
