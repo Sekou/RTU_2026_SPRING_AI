@@ -1,3 +1,4 @@
+#2026, S. Diane
 #pip install pygame PyOpenGL
 
 import pygame, numpy as np, math
